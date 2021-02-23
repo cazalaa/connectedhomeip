@@ -21,7 +21,7 @@ config("includes") {
   ]
 }
 
-source_set("lighting-common") {
+source_set("shutter-common") {
   sources = [
     "${chip_root}/src/app/clusters/bindings/bindings.cpp",
     "${chip_root}/src/app/clusters/level-control/level-control.cpp",
