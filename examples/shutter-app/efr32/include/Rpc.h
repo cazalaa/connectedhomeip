@@ -21,7 +21,7 @@
 namespace chip {
 namespace rpc {
 
-class LightingService;
+class ShutterService;
 
 int Init();
 void RunRpcService(void *);

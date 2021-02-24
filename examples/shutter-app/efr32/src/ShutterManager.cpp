@@ -17,17 +17,17 @@
  *    limitations under the License.
  */
 
-#include "LightingManager.h"
+#include "ShutterManager.h"
 
 #include "AppConfig.h"
 #include "AppTask.h"
 #include <FreeRTOS.h>
 
-LightingManager LightingManager::sLight;
+shutterManager shutterManager::sLight;
 
 TimerHandle_t sLightTimer;
 
-int LightingManager::Init()
+int shutterManager::Init()
 {
     // Create FreeRTOS sw timer for light timer.
     sLightTimer = xTimerCreate("lightTmr",       // Just a text name, not used by the RTOS kernel
@@ -51,33 +51,33 @@ int LightingManager::Init()
     return CHIP_NO_ERROR;
 }
 
-void LightingManager::SetCallbacks(Callback_fn_initiated aActionInitiated_CB, Callback_fn_completed aActionCompleted_CB)
+void shutterManager::SetCallbacks(Callback_fn_initiated aActionInitiated_CB, Callback_fn_completed aActionCompleted_CB)
 {
     mActionInitiated_CB = aActionInitiated_CB;
     mActionCompleted_CB = aActionCompleted_CB;
 }
 
-bool LightingManager::IsActionInProgress()
+bool shutterManager::IsActionInProgress()
 {
     return (mState == kState_OffInitiated || mState == kState_OnInitiated);
 }
 
-bool LightingManager::IsLightOn()
+bool shutterManager::IsLightOn()
 {
     return (mState == kState_OnCompleted);
 }
 
-void LightingManager::EnableAutoTurnOff(bool aOn)
+void shutterManager::EnableAutoTurnOff(bool aOn)
 {
     mAutoTurnOff = aOn;
 }
 
-void LightingManager::SetAutoTurnOffDuration(uint32_t aDurationInSecs)
+void shutterManager::SetAutoTurnOffDuration(uint32_t aDurationInSecs)
 {
     mAutoTurnOffDuration = aDurationInSecs;
 }
 
-bool LightingManager::InitiateAction(int32_t aActor, Action_t aAction)
+bool shutterManager::InitiateAction(int32_t aActor, Action_t aAction)
 {
     bool action_initiated = false;
     State_t new_state;
@@ -121,7 +121,7 @@ bool LightingManager::InitiateAction(int32_t aActor, Action_t aAction)
     return action_initiated;
 }
 
-void LightingManager::StartTimer(uint32_t aTimeoutMs)
+void shutterManager::StartTimer(uint32_t aTimeoutMs)
 {
     if (xTimerIsTimerActive(sLightTimer))
     {
@@ -139,7 +139,7 @@ void LightingManager::StartTimer(uint32_t aTimeoutMs)
     }
 }
 
-void LightingManager::CancelTimer(void)
+void shutterManager::CancelTimer(void)
 {
     if (xTimerStop(sLightTimer, 0) == pdFAIL)
     {
@@ -148,10 +148,10 @@ void LightingManager::CancelTimer(void)
     }
 }
 
-void LightingManager::TimerEventHandler(TimerHandle_t xTimer)
+void shutterManager::TimerEventHandler(TimerHandle_t xTimer)
 {
     // Get light obj context from timer id.
-    LightingManager * light = static_cast<LightingManager *>(pvTimerGetTimerID(xTimer));
+    shutterManager * light = static_cast<shutterManager *>(pvTimerGetTimerID(xTimer));
 
     // The timer event handler will be called in the context of the timer task
     // once sLightTimer expires. Post an event to apptask queue with the actual handler
@@ -170,9 +170,9 @@ void LightingManager::TimerEventHandler(TimerHandle_t xTimer)
     GetAppTask().PostEvent(&event);
 }
 
-void LightingManager::AutoTurnOffTimerEventHandler(AppEvent * aEvent)
+void shutterManager::AutoTurnOffTimerEventHandler(AppEvent * aEvent)
 {
-    LightingManager * light = static_cast<LightingManager *>(aEvent->TimerEvent.Context);
+    shutterManager * light = static_cast<shutterManager *>(aEvent->TimerEvent.Context);
     int32_t actor           = 0;
 
     // Make sure auto turn off timer is still armed.
@@ -188,11 +188,11 @@ void LightingManager::AutoTurnOffTimerEventHandler(AppEvent * aEvent)
     light->InitiateAction(actor, OFF_ACTION);
 }
 
-void LightingManager::ActuatorMovementTimerEventHandler(AppEvent * aEvent)
+void shutterManager::ActuatorMovementTimerEventHandler(AppEvent * aEvent)
 {
     Action_t actionCompleted = INVALID_ACTION;
 
-    LightingManager * light = static_cast<LightingManager *>(aEvent->TimerEvent.Context);
+    shutterManager * light = static_cast<shutterManager *>(aEvent->TimerEvent.Context);
 
     if (light->mState == kState_OffInitiated)
     {

@@ -23,7 +23,7 @@
 #include <stdint.h>
 
 #include "AppEvent.h"
-#include "LightingManager.h"
+#include "ShutterManager.h"
 
 #include "FreeRTOS.h"
 #include "timers.h" // provides FreeRTOS timer support
@@ -37,7 +37,7 @@ public:
     int StartAppTask();
     static void AppTaskMain(void * pvParameter);
 
-    void PostLightActionRequest(int32_t aActor, LightingManager::Action_t aAction);
+    void PostLightActionRequest(int32_t aActor, ShutterManager::Action_t aAction);
     void PostEvent(const AppEvent * event);
 
     void ButtonEventHandler(uint8_t btnIdx, uint8_t btnAction);
@@ -47,8 +47,8 @@ private:
 
     int Init();
 
-    static void ActionInitiated(LightingManager::Action_t aAction, int32_t aActor);
-    static void ActionCompleted(LightingManager::Action_t aAction);
+    static void ActionInitiated(ShutterManager::Action_t aAction, int32_t aActor);
+    static void ActionCompleted(ShutterManager::Action_t aAction);
 
     void CancelTimer(void);
 

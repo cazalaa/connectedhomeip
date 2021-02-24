@@ -114,21 +114,21 @@ int AppTask::Init()
     }
 
     EFR32_LOG("Current Firmware Version: %s", CHIP_DEVICE_CONFIG_DEVICE_FIRMWARE_REVISION);
-    err = LightMgr().Init();
+    err = shutterMgr().Init();
     if (err != CHIP_NO_ERROR)
     {
-        EFR32_LOG("LightMgr().Init() failed");
+        EFR32_LOG("shutterMgr().Init() failed");
         appError(err);
     }
 
-    LightMgr().SetCallbacks(ActionInitiated, ActionCompleted);
+    shutterMgr().SetCallbacks(ActionInitiated, ActionCompleted);
 
     // Initialize LEDs
     LEDWidget::InitGpio();
     sStatusLED.Init(SYSTEM_STATE_LED);
 
     sLightLED.Init(LIGHT_LED);
-    sLightLED.Set(LightMgr().IsLightOn());
+    sLightLED.Set(shutterMgr().IsLightOn());
     UpdateClusterState();
 
     ConfigurationMgr().LogDeviceConfig();
@@ -166,7 +166,7 @@ void AppTask::AppTaskMain(void * pvParameter)
     }
 
     EFR32_LOG("App Task started");
-    SetDeviceName("EFR32LightingDemo._chip._udp.local.");
+    SetDeviceName("EFR32shutteringDemo._chip._udp.local.");
 
     while (true)
     {
@@ -242,24 +242,24 @@ void AppTask::AppTaskMain(void * pvParameter)
 void AppTask::LightActionEventHandler(AppEvent * aEvent)
 {
     bool initiated = false;
-    LightingManager::Action_t action;
+    shutterManager::Action_t action;
     int32_t actor;
     int err = CHIP_NO_ERROR;
 
     if (aEvent->Type == AppEvent::kEventType_Light)
     {
-        action = static_cast<LightingManager::Action_t>(aEvent->LightEvent.Action);
+        action = static_cast<shutterManager::Action_t>(aEvent->LightEvent.Action);
         actor  = aEvent->LightEvent.Actor;
     }
     else if (aEvent->Type == AppEvent::kEventType_Button)
     {
-        if (LightMgr().IsLightOn())
+        if (shutterMgr().IsLightOn())
         {
-            action = LightingManager::OFF_ACTION;
+            action = shutterManager::OFF_ACTION;
         }
         else
         {
-            action = LightingManager::ON_ACTION;
+            action = shutterManager::ON_ACTION;
         }
         actor = AppEvent::kEventType_Button;
     }
@@ -270,7 +270,7 @@ void AppTask::LightActionEventHandler(AppEvent * aEvent)
 
     if (err == CHIP_NO_ERROR)
     {
-        initiated = LightMgr().InitiateAction(actor, action);
+        initiated = shutterMgr().InitiateAction(actor, action);
 
         if (!initiated)
         {
@@ -437,15 +437,15 @@ void AppTask::StartTimer(uint32_t aTimeoutInMs)
     mFunctionTimerActive = true;
 }
 
-void AppTask::ActionInitiated(LightingManager::Action_t aAction, int32_t aActor)
+void AppTask::ActionInitiated(shutterManager::Action_t aAction, int32_t aActor)
 {
     // Action initiated, update the light led
-    if (aAction == LightingManager::ON_ACTION)
+    if (aAction == shutterManager::ON_ACTION)
     {
         EFR32_LOG("Turning light ON")
         sLightLED.Set(true);
     }
-    else if (aAction == LightingManager::OFF_ACTION)
+    else if (aAction == shutterManager::OFF_ACTION)
     {
         EFR32_LOG("Turning light OFF")
         sLightLED.Set(false);
@@ -457,14 +457,14 @@ void AppTask::ActionInitiated(LightingManager::Action_t aAction, int32_t aActor)
     }
 }
 
-void AppTask::ActionCompleted(LightingManager::Action_t aAction)
+void AppTask::ActionCompleted(shutterManager::Action_t aAction)
 {
     // action has been completed bon the light
-    if (aAction == LightingManager::ON_ACTION)
+    if (aAction == shutterManager::ON_ACTION)
     {
         EFR32_LOG("Light ON")
     }
-    else if (aAction == LightingManager::OFF_ACTION)
+    else if (aAction == shutterManager::OFF_ACTION)
     {
         EFR32_LOG("Light OFF")
     }
@@ -476,7 +476,7 @@ void AppTask::ActionCompleted(LightingManager::Action_t aAction)
     }
 }
 
-void AppTask::PostLightActionRequest(int32_t aActor, LightingManager::Action_t aAction)
+void AppTask::PostLightActionRequest(int32_t aActor, shutterManager::Action_t aAction)
 {
     AppEvent event;
     event.Type              = AppEvent::kEventType_Light;
@@ -511,7 +511,7 @@ void AppTask::DispatchEvent(AppEvent * aEvent)
 
 void AppTask::UpdateClusterState(void)
 {
-    uint8_t newValue = LightMgr().IsLightOn();
+    uint8_t newValue = shutterMgr().IsLightOn();
 
     // write the new on/off value
     EmberAfStatus status = emberAfWriteAttribute(1, ZCL_ON_OFF_CLUSTER_ID, ZCL_ON_OFF_ATTRIBUTE_ID, CLUSTER_MASK_SERVER,

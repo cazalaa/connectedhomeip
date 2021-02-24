@@ -26,7 +26,7 @@
 #include "FreeRTOS.h"
 #include "timers.h" // provides FreeRTOS timer support
 
-class LightingManager
+class ShutterManager
 {
 public:
     enum Action_t
@@ -57,7 +57,7 @@ public:
     void SetCallbacks(Callback_fn_initiated aActionInitiated_CB, Callback_fn_completed aActionCompleted_CB);
 
 private:
-    friend LightingManager & LightMgr(void);
+    friend ShutterManager & ShutterMgr(void);
     State_t mState;
 
     Callback_fn_initiated mActionInitiated_CB;
@@ -74,10 +74,10 @@ private:
     static void AutoTurnOffTimerEventHandler(AppEvent * aEvent);
     static void ActuatorMovementTimerEventHandler(AppEvent * aEvent);
 
-    static LightingManager sLight;
+    static ShutterManager sLight;
 };
 
-inline LightingManager & LightMgr(void)
+inline ShutterManager & ShutterMgr(void)
 {
-    return LightingManager::sLight;
+    return ShutterManager::sLight;
 }
